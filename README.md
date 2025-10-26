@@ -20,7 +20,7 @@ This dApp implements a patient-centric healthcare data sharing platform using Et
 
 ### Installation
 ```bash
-git clone <your-repo-url>
+git clone [<your-repo-url>](https://github.com/Atom717/patient-history-dapp)
 cd patient-history-dapp
 npm install
 ```
