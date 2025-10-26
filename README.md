@@ -1,163 +1,182 @@
-# Patient History DApp
+# Patient History dApp
 
-A blockchain-based patient history management system with HL7 FHIR integration, ensuring secure, auditable, and consent-based healthcare data sharing.
+A blockchain-based patient history sharing system that enables secure, consent-driven sharing of FHIR bundles between healthcare providers while maintaining patient privacy and providing immutable audit trails.
 
-## Project Overview
+## 🏥 Overview
 
-This decentralized application (DApp) leverages Ethereum smart contracts to manage patient medical histories with the following key features:
+This dApp implements a patient-centric healthcare data sharing platform using Ethereum smart contracts. It allows healthcare providers to securely share patient FHIR bundles while ensuring:
 
-- **Role-based Access Control**: Patient, Provider, and Admin roles
-- **Consent Management**: Granular permissions and time-bound access tokens
-- **FHIR Integration**: HL7 FHIR R4 compliant data handling
-- **Immutable Audit Logs**: Blockchain-based access tracking
-- **Data Integrity**: On-chain hash verification for off-chain storage
+- **Patient Control**: Patients can grant, review, and revoke consent
+- **Data Privacy**: All PHI remains off-chain, only hashes and metadata on-chain
+- **Audit Trails**: Immutable logging of all data access events
+- **Integrity Verification**: Cryptographic verification of data integrity
 
-## Technology Stack
+## 🚀 Quick Start
 
-- **Smart Contracts**: Solidity 0.8.19
-- **Framework**: Truffle Suite
-- **Local Blockchain**: Ganache
-- **Access Control**: OpenZeppelin Contracts v5.0
-- **Backend**: Node.js + Express
-- **Frontend**: React + Vite
-- **Web3**: Web3.js / ethers.js
-- **Storage**: IPFS or PostgreSQL
+### Prerequisites
+- Node.js (v14+)
+- Ganache GUI or CLI
+- Truffle Framework
 
-## Project Structure
+### Installation
+```bash
+git clone <your-repo-url>
+cd patient-history-dapp
+npm install
+```
+
+### Run Demo
+```bash
+# Start Ganache GUI (Quickstart)
+# Deploy contracts
+npm run migrate
+
+# Run complete end-to-end demo
+npx truffle exec demo/end-to-end-demo.js
+```
+
+## 📋 Features
+
+### ✅ End-to-End Demo
+Complete scenario demonstrating:
+- Provider A shares FHIR bundle
+- Provider B verifies integrity and permissions  
+- Patient reviews and revokes access
+- Immutable audit trail maintained
+
+### ✅ PHI Privacy Compliance
+- **ON-CHAIN**: Only hashes, pointers, and generic metadata
+- **OFF-CHAIN**: All sensitive patient data (names, DOB, medical records)
+- No PHI exposure in smart contracts
+
+### ✅ Comprehensive Testing
+- 16 passing tests covering access control and audit verification
+- Consent management testing
+- Data integrity verification
+- Role-based access control
+
+## 🏗️ Architecture
+
+### Smart Contracts
+- **PatientAccessControl**: Role-based access control (Patient, Provider, Admin)
+- **ConsentManager**: Patient consent granting, revocation, and management
+- **DataRegistry**: FHIR bundle hash storage and integrity verification
+- **AuditLog**: Immutable audit trail for all data access events
+
+### Data Flow
+1. Provider creates FHIR bundle (off-chain)
+2. Provider registers bundle hash on blockchain
+3. Patient grants consent to other providers
+4. Providers verify consent before accessing data
+5. All access events logged immutably
+
+## 📁 Project Structure
 
 ```
-patient-history-dapp/
-├── contracts/           # Solidity smart contracts
-│   ├── AccessControl.sol
+├── contracts/           # Smart contracts
+│   ├── PatientAccessControl.sol
 │   ├── ConsentManager.sol
 │   ├── DataRegistry.sol
 │   └── AuditLog.sol
-├── migrations/          # Truffle migrations
-├── test/               # Test suites
-├── backend/            # Node.js API server
-├── frontend/           # React frontend
-└── docs/               # Documentation
-
+├── migrations/         # Deployment scripts
+├── test/              # Test suites
+├── demo/              # Demo scripts and documentation
+├── backend/           # Backend API (Node.js/Express)
+├── docs/              # Documentation
+└── scripts/           # Utility scripts
 ```
 
-## Quick Start
-
-### Prerequisites
-
-- Node.js v16+
-- npm
-- Truffle Suite
-- Ganache (GUI or CLI)
-- MetaMask extension
-
-### Installation
+## 🔧 Commands
 
 ```bash
-# Install dependencies
-npm install
-
-# Install Truffle globally (if not already installed)
-npm install -g truffle
-
 # Compile contracts
 npm run compile
 
+# Deploy contracts
+npm run migrate
+
 # Run tests
 npm run test
+
+# Run end-to-end demo
+npx truffle exec demo/end-to-end-demo.js
+
+# Enter Truffle console
+truffle console
 ```
 
-### Development Workflow
+## 🧪 Testing
 
-1. Start Ganache local blockchain
-2. Deploy contracts: `truffle migrate --reset`
-3. Run tests: `truffle test`
-4. Start backend: `npm run start:backend`
-5. Start frontend: `npm run dev:frontend`
+The project includes comprehensive test coverage:
 
-## Smart Contracts
+- **Access Control Tests**: Role assignment, revocation, modifiers
+- **Audit Log Tests**: Event logging, trail retrieval, filtering
+- **Consent Tests**: Granting, revoking, permission management
+- **Data Registry Tests**: Registration, integrity verification
 
-### AccessControl.sol
-Role-based access control using OpenZeppelin's AccessControl contract.
-
-**Roles:**
-- `PATIENT_ROLE`: 0x0000000000000000000000000000000000000000000000000000000000000001
-- `PROVIDER_ROLE`: 0x0000000000000000000000000000000000000000000000000000000000000002
-- `ADMIN_ROLE`: 0x0000000000000000000000000000000000000000000000000000000000000003
-
-### ConsentManager.sol
-Manages patient consent for data sharing with granular permissions.
-
-**Key Functions:**
-- `grantConsent(address provider, uint8 permissions, uint256 expiry)`
-- `revokeConsent(address provider)`
-- `checkConsent(address patient, address provider, uint8 permission)`
-
-### DataRegistry.sol
-Stores FHIR bundle hashes and metadata for integrity verification.
-
-**Key Functions:**
-- `registerData(string memory fhirBundleHash, string memory storagePointer, string memory patientId, uint256 timestamp)`
-- `verifyIntegrity(string memory fhirBundleHash)`
-- `getDataEntries(string memory patientId)`
-
-### AuditLog.sol
-Immutable logging of all data access events.
-
-**Key Functions:**
-- `logAccess(address accessor, string memory patientId, uint256 timestamp, uint8 actionType)`
-- `getAuditTrail(string memory patientId)`
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - User login
-
-### Patients
-- `POST /api/patients` - Register patient
-- `GET /api/patients/:patientId` - Get patient info
-
-### Consent
-- `POST /api/consent` - Grant consent
-- `DELETE /api/consent/:consentId` - Revoke consent
-- `GET /api/consent/:patientId` - List consents
-
-### Data
-- `POST /api/data/upload` - Upload FHIR bundle
-- `GET /api/data/:patientId` - Retrieve bundles
-- `GET /api/data/verify/:hash` - Verify integrity
-
-### Audit
-- `GET /api/audit/:patientId` - Get audit logs
-
-## Development Phases
-
-- [x] Phase 1: Environment Setup & Prerequisites (Week 1)
-- [x] Phase 2: Smart Contract Architecture (Week 2)
-- [ ] Phase 3: FHIR Integration Layer (Week 3)
-- [ ] Phase 4: Backend API Gateway (Week 4)
-- [ ] Phase 5: Smart Contract Testing (Week 5)
-- [ ] Phase 6: Frontend Development (Week 6-7)
-- [ ] Phase 7: Integration & End-to-End Testing (Week 8)
-- [ ] Phase 8: Documentation & Demo Preparation (Week 9-10)
-
-## Testing
-
-Run all tests:
+Run tests with:
 ```bash
 npm run test
 ```
 
-Run coverage:
-```bash
-npm run coverage
+## 📊 Demo Output
+
+The end-to-end demo shows:
+```
+🚀 Starting End-to-End Patient History Demo
+👥 Demo Participants: Patient, Provider A, Provider B
+📋 Step 1: Provider A Creates FHIR Bundle
+💾 Step 2: Provider A Registers Data
+🔐 Step 3: Patient Grants Consent
+🔍 Step 4: Provider B Accesses Data
+📊 Step 5: View Audit Trail
+👤 Step 6: Patient Reviews and Revokes
+📊 Step 7: Final Audit Trail
+🎉 Demo Complete!
 ```
 
-## License
+## 🔒 Security Features
 
-MIT
+- **Role-based Access Control**: Patient, Provider, Admin roles
+- **Consent Management**: Granular permissions with revocation
+- **Data Integrity**: SHA-256 hash verification
+- **Audit Trails**: Immutable logging for compliance
+- **PHI Protection**: All sensitive data remains off-chain
 
-## Contributors
+## 📚 Documentation
 
-Add your name here
+- [Architecture Overview](docs/ARCHITECTURE.md)
+- [Setup Guide](docs/SETUP.md)
+- [Run Guide](docs/RUN_GUIDE.md)
+- [End-to-End Demo](demo/end-to-end-demo.md)
 
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🏥 Use Cases
+
+- **Healthcare Provider Networks**: Secure data sharing between hospitals
+- **Telemedicine**: Patient data access for remote consultations
+- **Clinical Trials**: Consent-driven data sharing for research
+- **Emergency Care**: Rapid access to patient history with proper consent
+
+## 🔮 Future Enhancements
+
+- Frontend web interface
+- Mobile app integration
+- Advanced consent granularity
+- Integration with existing EHR systems
+- Multi-chain support
+
+---
+
+**Built with ❤️ for healthcare innovation**
