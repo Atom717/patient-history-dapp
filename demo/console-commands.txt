@@ -1,0 +1,94 @@
+# Copy these commands into Truffle Console
+
+# Step 1: Load Contracts and Accounts
+const PatientAccessControl = await PatientAccessControl.deployed();
+const ConsentManager = await ConsentManager.deployed();
+const DataRegistry = await DataRegistry.deployed();
+const AuditLog = await AuditLog.deployed();
+
+const accounts = await web3.eth.getAccounts();
+const patient = accounts[1];
+const providerA = accounts[2];
+const providerB = accounts[3];
+
+console.log('Patient:', patient);
+console.log('Provider A:', providerA);
+console.log('Provider B:', providerB);
+
+# Step 2: Provider A Creates FHIR Bundle
+const patientId = "P001-Alice";
+const hash = "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456";
+const storagePointer = "QmFHIR123456789abcdefghijklmnopqrstuvwxyz";
+
+# Step 3: Register Data on Blockchain
+const tx = await DataRegistry.registerData(
+  hash,
+  storagePointer,
+  patientId,
+  { from: providerA }
+);
+console.log('✅ Data registered:', tx.tx);
+
+# Step 4: Log Access Event
+await AuditLog.logAccess(
+  patientId,
+  hash,
+  1,
+  "Provider A registered FHIR bundle",
+  { from: providerA }
+);
+console.log('✅ Access logged');
+
+# Step 5: Grant Consent
+const consentTx = await ConsentManager.grantConsent(
+  providerB,
+  1,
+  0,
+  { from: patient }
+);
+console.log('✅ Consent granted:', consentTx.tx);
+
+# Step 6: Verify Consent
+const hasConsent = await ConsentManager.checkConsent(patient, providerB, 1);
+console.log('Has consent:', hasConsent);
+
+# Step 7: Provider B Retrieves Data
+const entries = await DataRegistry.getDataEntries(patientId);
+console.log('Entries:', entries.length);
+console.log('Hash:', entries[0].fhirBundleHash);
+
+# Step 8: Verify Integrity
+const isValid = await DataRegistry.verifyIntegrity(patientId, hash);
+console.log('Integrity verified:', isValid);
+
+# Step 9: Log Provider B Access
+await AuditLog.logAccess(
+  patientId,
+  hash,
+  2,
+  "Provider B viewed patient FHIR bundle",
+  { from: providerB }
+);
+
+# Step 10: Get Audit Trail
+const auditTrail = await AuditLog.getAuditTrail(patientId);
+console.log('Audit trail entries:', auditTrail.length);
+
+# Step 11: Patient Revokes Consent
+const revokeTx = await ConsentManager.revokeConsent(
+  providerB,
+  { from: patient }
+);
+console.log('✅ Consent revoked:', revokeTx.tx);
+
+# Step 12: Verify Access Denied
+const hasAccess = await ConsentManager.checkConsent(patient, providerB, 1);
+console.log('Access after revoke:', hasAccess);
+
+# Step 13: View Final Audit Trail
+const finalAudit = await AuditLog.getAuditTrail(patientId);
+console.log('Final audit entries:', finalAudit.length);
+finalAudit.forEach((entry, i) => {
+  console.log(`${i+1}. ${entry.actionDescription} - ${entry.accessor}`);
+});
+
